@@ -1,69 +1,40 @@
 # vertex-dev-generator-plane
 
-`vertex-dev-generator-plane` treats developer tools as a local verification problem. The Rust implementation is intentionally narrow, but the fixtures and notes make the behavior explicit.
+`vertex-dev-generator-plane` is a compact Rust repository for developer tools, centered on this goal: Build a Rust toolkit that studies generator behavior through negative fixtures, with human-readable error snapshots and local-only command execution.
 
-## Vertex Dev Generator Plane Checkpoints
+## Why I Keep It Small
 
-Treat the compact fixture as the contract and the extended examples as a scratchpad. The code should stay boring enough that a change in behavior is obvious from the test output.
+The point is to make a small domain rule concrete enough that a reader can change it and immediately see what broke.
 
-## What This Is For
+## Vertex Dev Generator Plane Review Notes
 
-I use this kind of project to make a rule visible before adding more machinery around it. The important part here is not the size of the codebase. It is that the input signals, scoring rule, fixture data, and expected output can all be checked in one sitting.
+Start with `diagnostic quality` and `safe rewrite`. Those cases create the widest score spread in this repo, so they are the best quick check when the model changes.
 
-## Project Layout
+## Included Behavior
 
-- `src`: primary implementation
-- `tests`: verification harness
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
-- `Cargo.toml`: Rust package metadata
+- `fixtures/domain_review.csv` adds cases for change width and diagnostic quality.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/vertex-dev-generator-walkthrough.md` walks through the case spread.
+- The Rust code includes a review path for `diagnostic quality` and `safe rewrite`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
-## Useful Pieces
+## Internal Model
 
-- Includes extended examples for safe defaults, including `recovery` and `degraded`.
-- Documents repeatable output tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
-- Stores project constants and verification metadata in `metadata/project.json`.
-- Adds a repository audit script that checks structure before running the language verifier.
+The repository has two validation layers: the original compact policy fixture and the domain review fixture. They are separate so one can change without hiding failures in the other.
 
-## Architecture Notes
+The Rust code keeps the review rule close to the tests.
 
-The core is a scoring model over demand, capacity, latency, risk, and weight. That keeps code shape, diagnostics, and safe defaults in one explicit decision path. The threshold is 174, with risk penalty 4, latency penalty 2, and weight bonus 2. The Rust code keeps ownership and data movement plain, which makes the tests useful for checking both behavior and API shape.
-
-## Tooling
-
-The only required setup is the local Rust toolchain. After cloning, stay in the repo root so fixture paths resolve correctly.
-
-## Case Study
-
-`boundary` is the first example I would inspect because it lands on the `review` path with a score of 123. The broader file also keeps `degraded` at 8 and `recovery` at 240, which gives the model a useful low-to-high spread.
-
-## Local Workflow
+## Try It Locally
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Validation
 
-## Quality Gate
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
-
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Expansion Ideas
-
-- Split the scoring constants into a typed configuration object and validate it before use.
-- Add a comparison mode that shows how decisions change when one signal is adjusted.
-- Add a loader for `examples/extended_cases.csv` and promote selected cases into the language test suite.
-- Add one more developer tools fixture that focuses on a malformed or borderline input.
+The verifier is intentionally local. It should fail if the fixture score math, lane assignment, or language-specific test drifts.
 
 ## Scope
 
-The examples cover useful edges, not every edge. A larger version would add malformed-input tests, richer reports, and deeper domain parsers.
+The fixture set is small enough to audit by hand. The next useful expansion is malformed input coverage, not extra surface area.
